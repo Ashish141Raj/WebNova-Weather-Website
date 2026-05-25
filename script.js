@@ -1,53 +1,67 @@
 const temp = document.querySelector(".temp");
-const locationField = document.querySelector(".location_time #location");
-const timeField = document.querySelector(".location_time #time");
-const conditionField = document.querySelector(".condition p");
-const search = document.querySelector(".search_area");
-const form = document.querySelector("form")
-const weatherIcon = document.querySelector(".weather_icon");
 
-form.addEventListener("submit", search_location);
+const locationField = document.querySelector("#location");
+
+const timeField = document.querySelector("#time");
+
+const conditionField = document.querySelector(".condition p");
+
+const search = document.querySelector(".search_area");
+
+const form = document.querySelector("form");
+
+const weatherIcon = document.querySelector(".weather_icon");
 
 let target = "";
 
-function getCurrentLocation(){
+// Form Submit
+
+form.addEventListener("submit", searchLocation);
+
+// Get Current Location
+
+function getCurrentLocation() {
 
     navigator.geolocation.getCurrentPosition(
 
-        (position)=>{
+        (position) => {
 
-            let latitude = position.coords.latitude;
+            const latitude = position.coords.latitude;
 
-            let longitude = position.coords.longitude;
+            const longitude = position.coords.longitude;
 
             target = `${latitude},${longitude}`;
 
             fetchResults(target);
         },
 
-        ()=>{
+        () => {
 
-            // If location permission denied
+            // Default Location
 
-            target = "Bihar";
+            target = "Delhi, India";
 
             fetchResults(target);
         }
     );
 }
-const fetchResults = async (target_location) => {
+
+// Fetch Weather Data
+
+async function fetchResults(targetLocation) {
 
     try {
 
-        let url =
-        `https://api.weatherapi.com/v1/current.json?key=9fc5f8031e944ca6b7c75337262405&q=${target_location}&aqi=no`;
+        const url =
+            `https://api.weatherapi.com/v1/current.json?key=9fc5f8031e944ca6b7c75337262405&q=${encodeURIComponent(targetLocation)}&aqi=no`;
 
         const res = await fetch(url);
+
         const data = await res.json();
 
         console.log(data);
 
-        // Invalid location handling
+        // Invalid Location
 
         if (data.error) {
 
@@ -56,13 +70,19 @@ const fetchResults = async (target_location) => {
             return;
         }
 
-        let locationName = data.location.name;
-        let localtime = data.location.localtime;
-        let temprature = data.current.temp_c;
-        let condition = data.current.condition.text;
+        // Extract Data
+
+        const locationName =
+            `${data.location.name}, ${data.location.country}`;
+
+        const localtime = data.location.localtime;
+
+        const temperature = data.current.temp_c;
+
+        const condition = data.current.condition.text;
 
         updateDetails(
-            temprature,
+            temperature,
             locationName,
             localtime,
             condition
@@ -74,67 +94,124 @@ const fetchResults = async (target_location) => {
 
         console.log(error);
     }
-};
+}
+
+// Update UI
+
 function updateDetails(
     temperature,
     locationName,
     localTime,
     conditionText
-){
+) {
+
+    // Temperature
 
     temp.innerText = `${temperature}°C`;
 
+    // Location
+
     locationField.innerText = locationName;
 
-    timeField.innerText = localTime;
+    // Time Formatting
+
+    const dateObj = new Date(localTime);
+
+    const options = {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: true
+    };
+
+    const formattedTime =
+        dateObj.toLocaleString("en-IN", options);
+
+    timeField.innerText = formattedTime;
+
+    // Weather Condition
 
     conditionField.innerText = conditionText;
 
     // Weather Icons
 
-    if(conditionText == "Sunny"){
+    if (conditionText === "Sunny") {
 
         weatherIcon.src =
-        "https://cdn-icons-png.flaticon.com/512/869/869869.png";
+            "https://cdn-icons-png.flaticon.com/512/869/869869.png";
     }
 
-    else if(conditionText == "Cloudy"){
+    else if (
+        conditionText === "Cloudy" ||
+        conditionText === "Partly cloudy"
+    ) {
 
         weatherIcon.src =
-        "https://cdn-icons-png.flaticon.com/512/414/414825.png";
+            "https://cdn-icons-png.flaticon.com/512/414/414825.png";
     }
 
-    else if(conditionText == "Rain"){
+    else if (
+        conditionText === "Rain" ||
+        conditionText === "Light rain" ||
+        conditionText === "Moderate rain"
+    ) {
 
         weatherIcon.src =
-        "https://cdn-icons-png.flaticon.com/512/3351/3351979.png";
+            "https://cdn-icons-png.flaticon.com/512/3351/3351979.png";
     }
 
-    else if(conditionText == "Mist"){
+    else if (
+        conditionText === "Mist" ||
+        conditionText === "Fog"
+    ) {
 
         weatherIcon.src =
-        "https://cdn-icons-png.flaticon.com/512/4005/4005901.png";
+            "https://cdn-icons-png.flaticon.com/512/4005/4005901.png";
     }
 
-    else{
+    else if (conditionText === "Snow") {
 
         weatherIcon.src =
-        "https://cdn-icons-png.flaticon.com/512/1779/1779940.png";
+            "https://cdn-icons-png.flaticon.com/512/642/642102.png";
+    }
+
+    else {
+
+        weatherIcon.src =
+            "https://cdn-icons-png.flaticon.com/512/1779/1779940.png";
     }
 }
-function search_location(e){
+
+// Search Location
+
+function searchLocation(e) {
 
     e.preventDefault();
 
     target = search.value.trim();
 
-    if(target === ""){
+    // Empty Input
+
+    if (target === "") {
 
         alert("Please enter location");
 
         return;
     }
 
-    fetchResults(target);
+    // Search in India
+
+    fetchResults(`${target}, India`);
+
+    // Clear Input
+
+    search.value = "";
 }
+
+// Initial Weather Load
+
 getCurrentLocation();
