@@ -79,13 +79,19 @@ async function fetchResults(targetLocation) {
 
         const temperature = data.current.temp_c;
 
-        const condition = data.current.condition.text;
+        const condition =
+            data.current.condition.text;
+
+        const icon =
+            data.current.condition.icon;
 
         updateDetails(
             temperature,
             locationName,
             localtime,
-            condition
+            condition,
+            icon,
+            data
         );
 
     } catch (error) {
@@ -102,7 +108,9 @@ function updateDetails(
     temperature,
     locationName,
     localTime,
-    conditionText
+    conditionText,
+    icon,
+    data
 ) {
 
     // Temperature
@@ -117,69 +125,33 @@ function updateDetails(
 
     updateLiveTime(localTime);
 
-    // Weather Condition
+    // Rain Detection Fix
 
-    conditionField.innerText = conditionText;
-
-    // Weather Icons
-
-    if (conditionText === "Sunny") {
-
-        weatherIcon.src =
-            "https://cdn-icons-png.flaticon.com/512/869/869869.png";
-    }
-
-    else if (
-        conditionText === "Cloudy" ||
-        conditionText === "Partly cloudy"
+    if (
+        data.current.precip_mm > 0 ||
+        data.current.humidity > 85
     ) {
 
-        weatherIcon.src =
-            "https://cdn-icons-png.flaticon.com/512/414/414825.png";
-    }
-
-    else if (
-        conditionText === "Rain" ||
-        conditionText === "Light rain" ||
-        conditionText === "Moderate rain"
-    ) {
+        conditionField.innerText =
+            "Rain showers";
 
         weatherIcon.src =
-            "https://cdn-icons-png.flaticon.com/512/3351/3351979.png";
-    }
-
-    else if (
-        conditionText === "Mist" ||
-        conditionText === "Fog"
-    ) {
-
-        weatherIcon.src =
-            "https://cdn-icons-png.flaticon.com/512/4005/4005901.png";
-    }
-
-    else if (conditionText === "Snow") {
-
-        weatherIcon.src =
-            "https://cdn-icons-png.flaticon.com/512/642/642102.png";
+            "https://cdn.weatherapi.com/weather/64x64/day/296.png";
     }
 
     else {
 
+        conditionField.innerText =
+            conditionText;
+
         weatherIcon.src =
-            "https://cdn-icons-png.flaticon.com/512/1779/1779940.png";
+            "https:" + icon;
     }
 }
 
 // Live Clock Function
 
 function updateLiveTime(localTime) {
-
-    const targetDate = new Date(localTime);
-
-    // Get timezone difference
-
-    const targetOffset =
-        targetDate.getTimezoneOffset();
 
     // Clear old interval
 
@@ -191,19 +163,6 @@ function updateLiveTime(localTime) {
     function updateClock() {
 
         const now = new Date();
-
-        // Current UTC Time
-
-        const utc =
-            now.getTime() +
-            (now.getTimezoneOffset() * 60000);
-
-        // Target Local Time
-
-        const liveDate =
-            new Date(
-                utc - (targetOffset * 60000)
-            );
 
         const options = {
 
@@ -225,7 +184,7 @@ function updateLiveTime(localTime) {
         };
 
         const formattedTime =
-            liveDate.toLocaleString(
+            now.toLocaleString(
                 "en-IN",
                 options
             );
