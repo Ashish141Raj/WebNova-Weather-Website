@@ -160,9 +160,11 @@ function updateLiveTime(localTime) {
         clearInterval(window.clockInterval);
     }
 
-    function updateClock() {
+    // Start from API local time
 
-        const now = new Date();
+    let liveDate = new Date(localTime);
+
+    function updateClock() {
 
         const options = {
 
@@ -184,13 +186,19 @@ function updateLiveTime(localTime) {
         };
 
         const formattedTime =
-            now.toLocaleString(
-                "en-IN",
+            liveDate.toLocaleString(
+                "en-US",
                 options
             );
 
         timeField.innerText =
             formattedTime;
+
+        // Increase by 1 second
+
+        liveDate.setSeconds(
+            liveDate.getSeconds() + 1
+        );
     }
 
     // Run instantly
