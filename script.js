@@ -113,25 +113,9 @@ function updateDetails(
 
     locationField.innerText = locationName;
 
-    // Time Formatting
+    // Live Time
 
-    const dateObj = new Date(localTime);
-
-    const options = {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-        hour12: true
-    };
-
-    const formattedTime =
-        dateObj.toLocaleString("en-IN", options);
-
-    timeField.innerText = formattedTime;
+    updateLiveTime(localTime);
 
     // Weather Condition
 
@@ -184,6 +168,80 @@ function updateDetails(
         weatherIcon.src =
             "https://cdn-icons-png.flaticon.com/512/1779/1779940.png";
     }
+}
+
+// Live Clock Function
+
+function updateLiveTime(localTime) {
+
+    const targetDate = new Date(localTime);
+
+    // Get timezone difference
+
+    const targetOffset =
+        targetDate.getTimezoneOffset();
+
+    // Clear old interval
+
+    if (window.clockInterval) {
+
+        clearInterval(window.clockInterval);
+    }
+
+    function updateClock() {
+
+        const now = new Date();
+
+        // Current UTC Time
+
+        const utc =
+            now.getTime() +
+            (now.getTimezoneOffset() * 60000);
+
+        // Target Local Time
+
+        const liveDate =
+            new Date(
+                utc - (targetOffset * 60000)
+            );
+
+        const options = {
+
+            weekday: "short",
+
+            day: "numeric",
+
+            month: "short",
+
+            year: "numeric",
+
+            hour: "numeric",
+
+            minute: "numeric",
+
+            second: "numeric",
+
+            hour12: true
+        };
+
+        const formattedTime =
+            liveDate.toLocaleString(
+                "en-IN",
+                options
+            );
+
+        timeField.innerText =
+            formattedTime;
+    }
+
+    // Run instantly
+
+    updateClock();
+
+    // Update every second
+
+    window.clockInterval =
+        setInterval(updateClock, 1000);
 }
 
 // Search Location
